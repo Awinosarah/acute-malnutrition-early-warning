@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Private data
+data/private/*
+!data/private/.gitkeep
+
+# Generated outputs
+*.pkl
+*.joblib
+*.parquet
+*.feather
+*.log
+
+# Large media exports
+demo/*.mp4
+demo/*.mov
+demo/*.mkv
