@@ -25,6 +25,7 @@ data/private/*
 *.log
 
 # Large media exports
+demo/
 demo/*.mp4
 demo/*.mov
 demo/*.mkv
