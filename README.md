@@ -22,34 +22,6 @@ The app combines:
 - District-level risk maps
 - Model evaluation metrics
 
-## Quick Start
-
-1. Clone the repository.
-
-```bash
-git clone https://github.com/YOUR-USERNAME/acute-malnutrition-early-warning.git
-cd acute-malnutrition-early-warning
-```
-
-2. Create a Python environment.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-3. Install dependencies.
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Run the app.
-
-```bash
-streamlit run streamlit_app.py
-```
-
 ## Data Requirements
 
 The CSV should include:
@@ -81,29 +53,6 @@ Upload a district GeoJSON in the sidebar. Select the GeoJSON column containing d
 
 Do not commit sensitive health data. Keep full datasets in `data/private/`, which is ignored by Git.
 
-## Repository Structure
-
-```text
-acute-malnutrition-early-warning/
-├── streamlit_app.py
-├── app/
-│   └── streamlit_app.py
-├── docs/
-│   └── TECHNICAL_DOCUMENTATION.md
-├── demo/
-│   └── DEMO_VIDEO_GUIDE.md
-├── impact_metrics/
-│   └── IMPACT_METRICS.md
-├── data/
-│   ├── sample/
-│   └── private/
-├── assets/
-│   └── screenshots/
-├── requirements.txt
-└── README.md
-```
-
 ## Author
 
 Sarah Awino
-
