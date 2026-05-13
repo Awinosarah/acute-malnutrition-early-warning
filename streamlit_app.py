@@ -729,8 +729,13 @@ def load_data_from_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # =============================================================================
-# FEATURE ENGINEERING
+# FEATURE ENGINEERING  (pruned)
 # =============================================================================
+#
+# Removed lower-importance / redundant engineered features:
+# Lag2_Z, Lag3_Z, Roll6_Max, Roll12_Mean, Roll12_Max, Trend, Acceleration,
+# Hist_P75, Lag1_Over_P75, Lag1_Over_P90, Lag1_Ratio_P75, Lag1_Ratio_P90.
+# Hist_P90 is retained because it supports the Alarm decision boundary.
 
 @st.cache_data(show_spinner=False)
 def build_features(_df: pd.DataFrame):
@@ -744,11 +749,10 @@ def build_features(_df: pd.DataFrame):
             hist = adm[:i]
             roll3 = adm[i - 3:i]
             roll6 = adm[max(0, i - 6):i]
-            roll12 = adm[max(0, i - 12):i]
 
             hist_mu = float(np.mean(hist))
             hist_sd = float(np.std(hist)) if np.std(hist) > 1e-6 else 1.0
-            hist_p75, hist_p90, hist_p95 = np.percentile(hist, [75, 90, 95])
+            hist_p90, hist_p95 = np.percentile(hist, [90, 95])
 
             lag1 = float(adm[i - 1])
             lag2 = float(adm[i - 2])
@@ -766,36 +770,32 @@ def build_features(_df: pd.DataFrame):
             row = {
                 "District": district,
                 "Date": d.loc[i, "Date"],
+                # Calendar
                 "Month": d.loc[i, "Date"].month,
                 "Quarter": d.loc[i, "Date"].quarter,
                 "Month_Sin": np.sin(2 * np.pi * d.loc[i, "Date"].month / 12),
                 "Month_Cos": np.cos(2 * np.pi * d.loc[i, "Date"].month / 12),
+                # Raw lags
                 "Lag1": lag1,
                 "Lag2": lag2,
                 "Lag3": lag3,
+                # Standardised lag
                 "Lag1_Z": (lag1 - hist_mu) / hist_sd,
-                "Lag2_Z": (lag2 - hist_mu) / hist_sd,
-                "Lag3_Z": (lag3 - hist_mu) / hist_sd,
+                # Rolling windows
                 "Roll3_Mean": float(np.mean(roll3)),
                 "Roll3_Std": float(np.std(roll3)),
                 "Roll6_Mean": float(np.mean(roll6)),
-                "Roll6_Max": float(np.max(roll6)),
-                "Roll12_Mean": float(np.mean(roll12)),
-                "Roll12_Max": float(np.max(roll12)),
-                "Trend": lag1 - lag3,
-                "Acceleration": lag1 - (2 * lag2) + lag3,
+                # Seasonal reference
                 "Seasonal_Lag12": seasonal_lag_12,
+                # Historical distribution
                 "Hist_Mean": hist_mu,
                 "Hist_Std": hist_sd,
-                "Hist_P75": hist_p75,
                 "Hist_P90": hist_p90,
                 "Hist_P95": hist_p95,
-                "Lag1_Over_P75": lag1 - hist_p75,
-                "Lag1_Over_P90": lag1 - hist_p90,
+                # Threshold exceedance / ratio
                 "Lag1_Over_P95": lag1 - hist_p95,
-                "Lag1_Ratio_P75": lag1 / (hist_p75 + 1e-6),
-                "Lag1_Ratio_P90": lag1 / (hist_p90 + 1e-6),
                 "Lag1_Ratio_P95": lag1 / (hist_p95 + 1e-6),
+                # Risk history
                 "Recent_WD_High_Count": recent_high,
                 "WD_Score_Lag": d.loc[i - 1, "wd_score"],
                 "XD_Score_Lag": d.loc[i - 1, "xd_score"],
@@ -804,6 +804,7 @@ def build_features(_df: pd.DataFrame):
                 "Target_XD_Risk": d.loc[i, "xd_risk"],
             }
 
+            # Passthrough numeric covariates, lagged by one month.
             for col in d.columns:
                 if col not in row and col not in _EXCLUDE_FROM_FEATURES:
                     if pd.api.types.is_numeric_dtype(d[col]):
@@ -815,10 +816,12 @@ def build_features(_df: pd.DataFrame):
     feat_df = apply_log_transform(feat_df, SKEWED_COVS)
 
     scale_cols = [
-        "Lag1", "Lag2", "Lag3", "Roll3_Mean", "Roll6_Mean", "Roll6_Max",
-        "Roll12_Mean", "Roll12_Max", "Trend", "Acceleration",
-        "Seasonal_Lag12", "Hist_Mean", "Hist_Std", "Hist_P75", "Hist_P90",
-        "Hist_P95", "Lag1_Over_P75", "Lag1_Over_P90", "Lag1_Over_P95",
+        "Lag1", "Lag2", "Lag3",
+        "Roll3_Mean", "Roll6_Mean",
+        "Seasonal_Lag12",
+        "Hist_Mean", "Hist_Std",
+        "Hist_P90", "Hist_P95",
+        "Lag1_Over_P95",
     ]
 
     scalers = {}
@@ -1113,16 +1116,17 @@ def run_regression_cv(_feat_df: pd.DataFrame, feature_cols: list[str], _scalers:
 
 class Forecaster:
     HORIZON = 3
+    # Engineered features computed at inference time. Keep in sync with build_features.
     BASE = [
         "Month", "Quarter", "Month_Sin", "Month_Cos",
-        "Lag1", "Lag2", "Lag3", "Lag1_Z", "Lag2_Z", "Lag3_Z",
-        "Roll3_Mean", "Roll3_Std", "Roll6_Mean", "Roll6_Max",
-        "Roll12_Mean", "Roll12_Max", "Trend", "Acceleration",
-        "Seasonal_Lag12", "Hist_Mean", "Hist_Std", "Hist_P75",
-        "Hist_P90", "Hist_P95", "Lag1_Over_P75", "Lag1_Over_P90",
-        "Lag1_Over_P95", "Lag1_Ratio_P75", "Lag1_Ratio_P90",
-        "Lag1_Ratio_P95", "Recent_WD_High_Count", "WD_Score_Lag",
-        "XD_Score_Lag",
+        "Lag1", "Lag2", "Lag3",
+        "Lag1_Z",
+        "Roll3_Mean", "Roll3_Std", "Roll6_Mean",
+        "Seasonal_Lag12",
+        "Hist_Mean", "Hist_Std", "Hist_P90", "Hist_P95",
+        "Lag1_Over_P95",
+        "Lag1_Ratio_P95",
+        "Recent_WD_High_Count", "WD_Score_Lag", "XD_Score_Lag",
     ]
 
     def fit(self, feat_df: pd.DataFrame, feature_cols: list[str], scalers: dict):
@@ -1165,43 +1169,38 @@ class Forecaster:
                 hist = np.array(hist_adm, dtype=float)
                 roll3 = hist[-3:]
                 roll6 = hist[-6:] if len(hist) >= 6 else roll3
-                roll12 = hist[-12:] if len(hist) >= 12 else hist
                 hist_mu = float(hist.mean())
                 hist_sd = float(hist.std()) if hist.std() > 1e-6 else 1.0
-                p75, p90, p95 = np.percentile(hist, [75, 90, 95])
+                p90, p95 = np.percentile(hist, [90, 95])
                 lag1, lag2, lag3 = hist[-1], hist[-2], hist[-3]
 
                 base_raw = {
+                    # Calendar
                     "Month": fd.month,
                     "Quarter": fd.quarter,
                     "Month_Sin": np.sin(2 * np.pi * fd.month / 12),
                     "Month_Cos": np.cos(2 * np.pi * fd.month / 12),
+                    # Raw lags
                     "Lag1": (lag1 - mu) / sg,
                     "Lag2": (lag2 - mu) / sg,
                     "Lag3": (lag3 - mu) / sg,
+                    # Standardised lag
                     "Lag1_Z": (lag1 - hist_mu) / hist_sd,
-                    "Lag2_Z": (lag2 - hist_mu) / hist_sd,
-                    "Lag3_Z": (lag3 - hist_mu) / hist_sd,
+                    # Rolling windows
                     "Roll3_Mean": (roll3.mean() - mu) / sg,
                     "Roll3_Std": roll3.std(),
                     "Roll6_Mean": (roll6.mean() - mu) / sg,
-                    "Roll6_Max": (roll6.max() - mu) / sg,
-                    "Roll12_Mean": (roll12.mean() - mu) / sg,
-                    "Roll12_Max": (roll12.max() - mu) / sg,
-                    "Trend": (lag1 - lag3) / sg,
-                    "Acceleration": (lag1 - (2 * lag2) + lag3) / sg,
+                    # Seasonal reference
                     "Seasonal_Lag12": (hist[-12] - mu) / sg if len(hist) >= 12 else (lag1 - mu) / sg,
+                    # Historical distribution
                     "Hist_Mean": (hist_mu - mu) / sg,
                     "Hist_Std": (hist_sd - mu) / sg,
-                    "Hist_P75": (p75 - mu) / sg,
                     "Hist_P90": (p90 - mu) / sg,
                     "Hist_P95": (p95 - mu) / sg,
-                    "Lag1_Over_P75": (lag1 - p75) / sg,
-                    "Lag1_Over_P90": (lag1 - p90) / sg,
+                    # Threshold exceedance / ratio
                     "Lag1_Over_P95": (lag1 - p95) / sg,
-                    "Lag1_Ratio_P75": lag1 / (p75 + 1e-6),
-                    "Lag1_Ratio_P90": lag1 / (p90 + 1e-6),
                     "Lag1_Ratio_P95": lag1 / (p95 + 1e-6),
+                    # Risk history
                     "Recent_WD_High_Count": np.isin(hist_wd[-3:], [2, 3]).sum(),
                     "WD_Score_Lag": hist_wd[-1],
                     "XD_Score_Lag": hist_xd[-1],
