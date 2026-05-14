@@ -1171,7 +1171,8 @@ class Forecaster:
                 roll6 = hist[-6:] if len(hist) >= 6 else roll3
                 hist_mu = float(hist.mean())
                 hist_sd = float(hist.std()) if hist.std() > 1e-6 else 1.0
-                p90, p95 = np.percentile(hist, [90, 95])
+                #p90, p95 = np.percentile(hist, [90, 95])
+                p75, p90, p95 = np.percentile(hist, [75, 90, 95])
                 lag1, lag2, lag3 = hist[-1], hist[-2], hist[-3]
 
                 base_raw = {
