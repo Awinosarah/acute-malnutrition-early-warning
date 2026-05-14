@@ -1,3 +1,9 @@
+[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/Awinosarah/acute-malnutrition-early-warning?style=for-the-badge)](https://github.com/Awinosarah/acute-malnutrition-early-warning/stargazers)
+
+
 # Acute Malnutrition Early Warning System
 
 A district-level machine learning and analytics platform for monitoring, classifying, and forecasting acute malnutrition risk in Uganda.
