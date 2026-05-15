@@ -1,6 +1,6 @@
 # Acute Malnutrition Forecasting Tool (AMFT)
 
-A district-level machine learning and analytics platform for monitoring, classifying, and forecasting acute malnutrition risk in Uganda. The system integrates nutrition, climate, and environmental data with forecasting models and geospatial visualizations to support early warning, hotspot identification, and evidence-based decision-making for public health and nutrition programs. The current version is built using Streamlit and Python-based machine learning frameworks to support interactive analytics, forecasting, and visualization. The tool is currently under development and is planned for deployment and integration within the DHIS2 and Climate Health Analytics Platform (CHAP) ecosystem to support full operationalization and routine use.
+A district-level machine learning and analytics platform for monitoring, classifying, and forecasting acute malnutrition risk in Uganda. The system integrates nutrition, climate, and environmental data with forecasting models and geospatial visualizations to support forecasting, hotspot identification, and evidence-based decision-making for public health and nutrition programs. The current version is built using Streamlit and Python-based machine learning frameworks to support interactive analytics, forecasting, and visualization. The tool is currently under development and is planned for deployment and integration within the DHIS2 and Climate Health Analytics Platform (CHAP) ecosystem to support full operationalization and routine use.
 
 # Key Features
 - Integration of climate, health, nutrition, and environmental data from multiple sources
@@ -11,7 +11,7 @@ A district-level machine learning and analytics platform for monitoring, classif
 - Percentile-based risk classification (Normal, Alert, Alarm, Emergency)
 - Identification and mapping of malnutrition hotspots
 - Visualization of spatial and temporal risk patterns through interactive dashboards and maps
-- District-level early warning and decision-support analytics
+- District-level forecasting and decision-support analytics
 - Integration-ready architecture for deployment within the DHIS2 and CHAP ecosystem
 
 # System Architecture within the DHIS2 ecosystem
@@ -170,7 +170,7 @@ Advantages:
 
 Used for:
 - Classifying districts into malnutrition risk categories
-- Supporting hotspot identification and early warning analysis
+- Supporting hotspot identification and forecasting analysis
   
 Advantages:
 - Handles mixed variable types (continuous and categorical)
